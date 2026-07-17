@@ -1,11 +1,10 @@
-# GeekEden Tech Blog - Day 1: NetEase MMO Tech Stack & ECS vs OOP Architecture Deep Dive
+# GeekEden Tech Blog - MMO Tech Stack & ECS vs OOP Architecture Deep Dive
 
-**Published:** 2026-07-17
 **Author:** [@8Dis-like](https://github.com/8Dis-like)
 
 ---
 
-When preparing for a technical interview as a C++ Client Developer for NetEase's flagship MMO *Fantasy Westward Journey*, a deep understanding of core game architectures and underlying technology stacks is crucial. This article summarizes the learnings from Day 1 of the interview preparation plan, focusing heavily on **the performance battle between Object-Oriented Programming (OOP) and Entity-Component-System (ECS)** in game architectures, as well as the evolution of **modern MMO technology stacks**.
+When exploring the core game architectures and underlying technology stacks of Massively Multiplayer Online (MMO) games, a deep understanding of performance optimization is crucial. This article focuses heavily on **the performance battle between Object-Oriented Programming (OOP) and Entity-Component-System (ECS)** in game architectures, as well as the evolution of **modern MMO technology stacks**.
 
 ## 1. Game Object Architecture: The Ultimate Showdown Between OOP and ECS
 
@@ -81,21 +80,21 @@ public:
 **The Overwhelming Advantages of ECS:**
 - **Zero vptr Overhead**: Components are pure structs and have no virtual table pointers.
 - **Ultimate Cache Utilization**: Systems iterate over contiguous data like `std::vector<TransformComponent>`. The CPU's hardware prefetcher can load batches of adjacent data into L1/L2 caches, resulting in almost 100% cache hits. This boosts performance by multiples or even orders of magnitude.
-- **Native Multi-threading Support**: Systems and components are decoupled. `MovementSystem` doesn't care whether a component belongs to a player or an NPC. You can slice the arrays into segments without locks and distribute the workload across a multi-core CPU (e.g., Unity Job System).
+- **Native Multi-threading Support**: Systems and components are decoupled. `MovementSystem` doesn't care whether a component belongs to a player or an NPC. You can slice the arrays into segments without locks and distribute the workload across a multi-core CPU.
 
 ---
 
-## 2. Evolution of NetEase MMO Core Tech Stack
+## 2. Evolution of Modern MMO Core Tech Stack
 
-On a business level, national-tier MMOs like *Fantasy Westward Journey* have undergone long architectural evolutions:
+On a business level, national-tier MMOs have undergone long architectural evolutions:
 
 ### 1. Server Architecture and Microservices
 - Traditional architectures relied on dedicated server clusters (Gateway, Zone Servers, Battle Servers, DB Proxies).
-- Modern systems are evolving towards cloud-native microservices (e.g., TKE container engines) and dynamic zoning mechanisms to support millions of concurrent users and low-latency global servers.
+- Modern systems are evolving towards cloud-native microservices (e.g., container engines) and dynamic zoning mechanisms to support millions of concurrent users and low-latency global servers.
 
 ### 2. Scripting Languages: Python vs Lua
-- NetEase's "Fantasy" lineage historically chose **Python** and even developed their custom GIL-less virtual machine to support hot-reloading.
-- Other industry leaders (Tencent, Kingsoft) predominantly use **Lua (LuaJIT)**. Regardless of the choice, C++ always handles high-performance low-level computations, while scripts handle high-frequency iterative business logic.
+- Some flagship projects historically chose **Python** and even developed their custom GIL-less virtual machine to support hot-reloading.
+- Other industry leaders predominantly use **Lua (LuaJIT)**. Regardless of the choice, C++ always handles high-performance low-level computations, while scripts handle high-frequency iterative business logic.
 
 ### 3. Network Synchronization
 - MMO networking utilizes mixed protocols: **TCP** for high-reliability scenarios (logins, inventory, trades) and **UDP/KCP** for high-real-time scenarios (character movement, combat hit registration).
@@ -109,6 +108,3 @@ As an engineer with a hybrid background in AI distributed training and C++ syste
 1. **Distributed AI Test Bots**: Leveraging containerization (Docker Compose/K8s) alongside Reinforcement Learning to deploy thousands of AI bots for automated server load testing and economic system validation.
 2. **Cloud-to-Client AI Director System**: Running lightweight Large Language Models (LLMs) on the server to dynamically analyze the battlefield and generate events, which are sent to the client to trigger high-performance visual effects—breaking away from traditional hard-coded scripting.
 3. **Rendering Optimization Pipeline**: Bridging 3D graphics (LOD, GPU Instancing) with neural networks to simulate Global Illumination, achieving console-level graphics on mobile devices.
-
----
-*This article encapsulates the Day 1 review for the NetEase interview, aiming to build a comprehensive view of game industrialization from low-level C++ mechanics to macro architectures.*

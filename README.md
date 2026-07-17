@@ -1,6 +1,6 @@
 # GeekEden 🌐
 
-Welcome to **GeekEden**, a curated repository for in-depth technical blogs, architectural teardowns, and interview preparations. The core mission of GeekEden is to systematically document engineering insights, especially in Game Development, AI Systems, and High-Performance C++ Backend engineering.
+Welcome to **GeekEden**, a curated repository for in-depth technical blogs and architectural teardowns. The core mission of GeekEden is to systematically document engineering insights, especially in Game Development, AI Systems, and High-Performance C++ Backend engineering.
 
 > **Note:** Core contents are provided in **bilingual format (English and Chinese)**. Support for other languages will be added in the future.
 
@@ -14,8 +14,8 @@ Welcome to **GeekEden**, a curated repository for in-depth technical blogs, arch
 ## 📚 Featured Articles
 
 ### Game Development
-- [Day 1: NetEase MMO Tech Stack & ECS vs OOP Architecture (EN)](docs/game-dev/day1-netease-interview-prep-en.md)
-- [Day 1: 网易 MMO 技术栈解析与 ECS vs OOP 架构深度对比 (ZH)](docs/game-dev/day1-netease-interview-prep-zh.md)
+- [MMO Tech Stack & ECS vs OOP Architecture (EN)](docs/game-dev/ecs-vs-oop-mmo-architecture-en.md)
+- [MMO 技术栈解析与 ECS vs OOP 架构深度对比 (ZH)](docs/game-dev/ecs-vs-oop-mmo-architecture-zh.md)
 
 ## ✍️ Author
 Designed and maintained by [@8Dis-like](https://github.com/8Dis-like).
@@ -24,7 +24,7 @@ Designed and maintained by [@8Dis-like](https://github.com/8Dis-like).
 
 # GeekEden 🌐 (中文介绍)
 
-欢迎来到 **GeekEden**，这是一个精心维护的技术知识库，主要用于整理深度技术博客、架构解析以及顶级互联网公司的面试准备心得。GeekEden 的核心使命是系统化记录工程技术洞察，涵盖游戏开发、AI 系统以及高性能 C++ 后端工程等领域。
+欢迎来到 **GeekEden**，这是一个精心维护的技术知识库，主要用于整理深度技术博客与架构解析。GeekEden 的核心使命是系统化记录工程技术洞察，涵盖游戏开发、AI 系统以及高性能 C++ 后端工程等领域。
 
 > **注：** 核心内容均提供 **中英双语版**，未来将逐步支持更多语言。
 
@@ -38,5 +38,5 @@ Designed and maintained by [@8Dis-like](https://github.com/8Dis-like).
 ## 📚 精选文章
 
 ### 游戏开发
-- [Day 1: 网易 MMO 技术栈解析与 ECS vs OOP 架构深度对比 (ZH)](docs/game-dev/day1-netease-interview-prep-zh.md)
-- [Day 1: NetEase MMO Tech Stack & ECS vs OOP Architecture (EN)](docs/game-dev/day1-netease-interview-prep-en.md)
+- [MMO 技术栈解析与 ECS vs OOP 架构深度对比 (ZH)](docs/game-dev/ecs-vs-oop-mmo-architecture-zh.md)
+- [MMO Tech Stack & ECS vs OOP Architecture (EN)](docs/game-dev/ecs-vs-oop-mmo-architecture-en.md)
