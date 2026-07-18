@@ -43,10 +43,26 @@ public:
 };
 ```
 
-**Three Major Performance Pain Points in OOP:**
-1. **vptr Memory Overhead**: On 64-bit systems, any class containing virtual functions carries an extra 8-byte virtual table pointer (`vptr`). For 100,000 objects, this results in nearly 800KB of wasted memory. In memory-sensitive mobile environments, this adds up quickly.
-2. **Memory Alignment Traps**: The `NPC` class contains only a 4-byte `hp`, but due to the 8-byte `vptr` and 8-byte alignment rules, its size bloats to 16 bytes. This causes 25% of the memory to be wasted as padding.
-3. **Cache Misses**: When iterating through a `std::vector<std::unique_ptr<GameObject>>`, the pointers are contiguous in the array, but the actual objects are scattered across heap memory. When the CPU executes the polymorphic call `obj->update()`, it triggers severe cache misses and branch prediction failures, drastically hurting frame rates.
+**Four Core Pain Points and Phenomenon Analysis of OOP Architecture:**
+
+**① The Memory Overhead of the Virtual Table Pointer (vptr)**
+- **Phenomenon**: The `GameObject` itself does not have any member variables, yet its `sizeof` is 8 (on a 64-bit system). This is because the compiler secretly inserts a hidden pointer `vptr` into classes with virtual functions, pointing to the class's virtual table (vtable).
+- **MMO Pain Point**: In MMOs, there can be thousands of objects on a single screen. If every object carries an extra 8 bytes of `vptr` due to polymorphism, 1,000 objects translate to an additional 8KB. While the absolute value isn't massive, in memory-sensitive mobile environments or massive on-screen scenarios, this overhead is magnified.
+- **Optimization Strategy**: For low-level components that don't need polymorphism (such as pure coordinates or colliders), avoid using virtual functions. You can use CRTP (Curiously Recurring Template Pattern for static polymorphism) or ECS (Entity Component System) architectures to eliminate `vptr` overhead.
+
+**② Memory Alignment Traps**
+- **Phenomenon**: Notice the `NPC` class. It only has one `int hp` (4 bytes) and a `vptr` (8 bytes), which conceptually should be 12 bytes. But if the compiler defaults to 8-byte alignment, the size of `NPC` inflates to 16 bytes (4-byte int + 4-byte padding + 8-byte vptr).
+- **MMO Pain Point**: The padding caused by memory alignment results in a significant amount of wasted memory.
+- **Optimization Strategy**: When defining game data structures, carefully arrange member variables (largest first, smallest last), or manually control alignment using `#pragma pack` / `alignas` to reduce memory fragmentation.
+
+**③ Polymorphism and CPU Cache Misses**
+- **Phenomenon**: The code uses `std::vector<std::unique_ptr<GameObject>>`. `unique_ptr` guarantees ownership and automatic memory management, which is great. However, the vector is storing pointers.
+- **MMO Pain Point**: When iterating through the vector and calling `update()`, although the array of pointers is contiguous in memory, the actual objects they point to are scattered across the heap. Each `obj->update()` call triggers a Cache Miss, and virtual function calls cannot be accurately predicted by the CPU's branch predictor. During massive object iteration, this causes severe performance bottlenecks.
+- **Optimization Strategy**: Modern game engines lean towards using ECS architectures. By separating data from logic and tightly packing components of the same type in contiguous memory, you can iterate and call concrete functions directly rather than virtual functions, thus maximizing CPU Cache utilization.
+
+**④ Why is `virtual ~GameObject() = default;` necessary?**
+- **Core Principle**: Whenever a class is designed as a base class (especially when containing other virtual functions), it must provide a virtual destructor.
+- **MMO Pain Point**: If a player goes offline or an NPC dies, we `delete` it via a `GameObject*` pointer. If there is no virtual destructor, C++ will only call the base class's destructor. The destructors for `PlayerCharacter` and `NPC` will not be executed, leading to severe memory leaks or unreleased resources (such as textures and audio handles).
 
 ### 2. The Solution in Modern Engines: ECS Architecture
 
