@@ -162,6 +162,14 @@ struct NodeB { shared_ptr<NodeA> aptr; ~NodeB() { cout << "NodeB destroyed!\n"; 
 }
 ```
 
+**Execution Result:**
+```text
+---3. Circular Reference---
+a计数2
+b计数2
+Leak happended!No destroy message printed!
+```
+
 ### 2. The Solution: WeakPtr
 A `weak_ptr` acts as an **"observer" pointer**.
 - It points to an object but **does not own** it.
@@ -187,6 +195,15 @@ struct Child {
     c->parent = p;
     // After leaving this scope, both p and c will destruct correctly.
 }
+```
+
+**Execution Result:**
+```text
+---4. Fix with weak ptr---
+p计数1
+c计数2
+Parent destroyed
+Child destroyed
 ```
 
 ---

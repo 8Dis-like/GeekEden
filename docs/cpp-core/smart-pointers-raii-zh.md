@@ -161,6 +161,14 @@ struct NodeB { shared_ptr<NodeA> aptr; ~NodeB() { cout << "NodeB destroyed!\n"; 
 }
 ```
 
+**运行结果:**
+```text
+---3. Circular Reference---
+a计数2
+b计数2
+Leak happended!No destroy message printed!
+```
+
 ### 2. 解决方案：WeakPtr（弱指针）
 `weak_ptr` 是一种**“观察者”指针**。
 - 它指向对象，但**不拥有**对象的所有权。
@@ -186,6 +194,15 @@ struct Child {
     c->parent = p;
     // 离开作用域后，p 和 c 均会正确析构
 }
+```
+
+**运行结果:**
+```text
+---4. Fix with weak ptr---
+p计数1
+c计数2
+Parent destroyed
+Child destroyed
 ```
 
 ---
