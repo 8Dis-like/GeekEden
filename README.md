@@ -20,6 +20,8 @@ Welcome to **GeekEden**, a curated repository for in-depth technical blogs and a
 ### C++ Core & Backend Engineering
 - [Smart Pointers & RAII: Memory Management in Game Dev (EN)](docs/cpp-core/smart-pointers-raii-en.md)
 - [智能指针与 RAII 原理实战：游戏开发中的内存管理 (ZH)](docs/cpp-core/smart-pointers-raii-zh.md)
+- [C++ STL Internals: Vector Capacity, Emplace Optimization, and Hash Maps (EN)](docs/cpp-core/stl-vector-map-performance-en.md)
+- [C++ STL 底层机制：Vector 扩容、Emplace 优化与哈希表实战 (ZH)](docs/cpp-core/stl-vector-map-performance-zh.md)
 
 ## ✍️ Author
 Designed and maintained by [@8Dis-like](https://github.com/8Dis-like).
@@ -48,3 +50,5 @@ Designed and maintained by [@8Dis-like](https://github.com/8Dis-like).
 ### C++ 核心与后端工程
 - [智能指针与 RAII 原理实战：游戏开发中的内存管理 (ZH)](docs/cpp-core/smart-pointers-raii-zh.md)
 - [Smart Pointers & RAII: Memory Management in Game Dev (EN)](docs/cpp-core/smart-pointers-raii-en.md)
+- [C++ STL 底层机制：Vector 扩容、Emplace 优化与哈希表实战 (ZH)](docs/cpp-core/stl-vector-map-performance-zh.md)
+- [C++ STL Internals: Vector Capacity, Emplace Optimization, and Hash Maps (EN)](docs/cpp-core/stl-vector-map-performance-en.md)
