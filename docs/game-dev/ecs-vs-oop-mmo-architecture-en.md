@@ -43,6 +43,19 @@ public:
 };
 ```
 
+**Execution Result:**
+```text
+---Game Loop starts---
+[Render] Player at (10.08, 20)
+[Render] NPC HP: 100
+[Render] NPC HP: 50
+---Game Loop Ends---
+
+Memory Analysis:sizeof(GameObject):8bytes
+sizeof(Player):16bytes
+sizeof(NPC):16bytes
+```
+
 **Four Core Pain Points and Phenomenon Analysis of OOP Architecture:**
 
 **① The Memory Overhead of the Virtual Table Pointer (vptr)**

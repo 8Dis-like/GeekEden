@@ -43,6 +43,19 @@ public:
 };
 ```
 
+**运行结果:**
+```text
+---Game Loop starts---
+[Render] Player at (10.08, 20)
+[Render] NPC HP: 100
+[Render] NPC HP: 50
+---Game Loop Ends---
+
+Memory Analysis:sizeof(GameObject):8bytes
+sizeof(Player):16bytes
+sizeof(NPC):16bytes
+```
+
 **OOP 架构面临的四大核心痛点与现象分析：**
 
 **① 虚函数表指针（vptr）带来的内存开销**
