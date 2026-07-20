@@ -174,7 +174,7 @@ public:
 
             if (curr == food_) { found = true; break; }
 
-            Point neighbors[4] = {{curr.x, curr.y-1}, {curr.x, curr.y+1}, {curr.x-1, curr.y}, {curr.x+1, curr.y}};
+            Point neighbors[4] = { {curr.x, curr.y-1}, {curr.x, curr.y+1}, {curr.x-1, curr.y}, {curr.x+1, curr.y} };
             
             for (const auto& next : neighbors) {
                 // Out-of-bounds detection
