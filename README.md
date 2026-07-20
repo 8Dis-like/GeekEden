@@ -16,6 +16,8 @@ Welcome to **GeekEden**, a curated repository for in-depth technical blogs and a
 ### Game Development
 - [MMO Tech Stack & ECS vs OOP Architecture (EN)](docs/game-dev/ecs-vs-oop-mmo-architecture-en.md)
 - [MMO 技术栈解析与 ECS vs OOP 架构深度对比 (ZH)](docs/game-dev/ecs-vs-oop-mmo-architecture-zh.md)
+- [C++ Game Prototype: Snake Logic & A* Auto-Routing (EN)](docs/game-dev/snake-ai-a-star-en.md)
+- [C++ 游戏原型综合开发：贪吃蛇逻辑与 A* 自动寻路 (ZH)](docs/game-dev/snake-ai-a-star-zh.md)
 
 ### C++ Core & Backend Engineering
 - [Smart Pointers & RAII: Memory Management in Game Dev (EN)](docs/cpp-core/smart-pointers-raii-en.md)
@@ -48,6 +50,8 @@ Designed and maintained by [@8Dis-like](https://github.com/8Dis-like).
 ### 游戏开发
 - [MMO 技术栈解析与 ECS vs OOP 架构深度对比 (ZH)](docs/game-dev/ecs-vs-oop-mmo-architecture-zh.md)
 - [MMO Tech Stack & ECS vs OOP Architecture (EN)](docs/game-dev/ecs-vs-oop-mmo-architecture-en.md)
+- [C++ 游戏原型综合开发：贪吃蛇逻辑与 A* 自动寻路 (ZH)](docs/game-dev/snake-ai-a-star-zh.md)
+- [C++ Game Prototype: Snake Logic & A* Auto-Routing (EN)](docs/game-dev/snake-ai-a-star-en.md)
 
 ### C++ 核心与后端工程
 - [智能指针与 RAII 原理实战：游戏开发中的内存管理 (ZH)](docs/cpp-core/smart-pointers-raii-zh.md)
