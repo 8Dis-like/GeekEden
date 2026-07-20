@@ -169,6 +169,48 @@ int main() {
 
     return 0;
 }
+```cpp
+// ... Previous code remains unchanged ...
+```
+
+**Execution Results:**
+```text
+=== Task 1: Thread Safe Account ===
+deposit +:100|balance:1100
+withdraw -50|balance:1050
+withdraw -50|balance:1000
+deposit +:100|balance:1100
+deposit +:100|balance:1200
+withdraw -50|balance:1150
+deposit +:100|balance:1250
+withdraw -50|balance:1200
+deposit +:100|balance:1300
+withdraw -50|balance:1250
+final balance:1250
+
+=== Task 2: Producer-Consumer Model ===
+consumed:0
+consumed:1
+consumed:2
+consumed:3
+consumed:4
+consumed:5
+consumed:6
+consumed:7
+consumed:8
+consumed:9
+Consumer exiting
+
+=== Task 3: Deadlock Demo ===
+=== 开始演示死锁与修复 ===
+--- 执行修复后的安全逻辑 (C++11/14 兼容版) ---
+[Safe Task 2] Processing... Iteration 0
+[Safe Task 2] Processing... Iteration 1
+[Safe Task 2] Processing... Iteration 2
+[Safe Task 1] Processing... Iteration 0
+[Safe Task 1] Processing... Iteration 1
+[Safe Task 1] Processing... Iteration 2
+=== 演示结束，无死锁发生 ===
 ```
 
 ---
@@ -199,4 +241,18 @@ When a thread calls this function, the OS scheduler immediately strips its CPU t
 ### 4. Advanced Locking: From RAII to Deadlock Prevention
 - **`std::lock_guard`**: The most lightweight RAII wrapper. It locks at the beginning of the scope and unlocks at the exit. It does not support manual control and cannot be used with `wait`.
 - **`std::unique_lock`**: Provides flexible mechanisms like `unlock()`. This is essential because the condition variable's `wait` needs to call the underlying `unlock` method to temporarily yield lock ownership during sleep.
-- **`std::scoped_lock` (C++17)**: The ultimate multi-lock deadlock prevention tool. In Task 3, if two threads attempt to lock A and B in reverse orders respectively, a deadlock is highly likely. `scoped_lock` internally employs complex deadlock avoidance algorithms (such as lock-failure retry and rollback mechanisms), ensuring that either all locks are acquired simultaneously or it safely blocks, fundamentally eliminating hidden deadlock risks.
+- **`std::scoped_lock` (C++17)**: The ultimate multi-lock deadlock prevention tool. Internally employs complex deadlock avoidance algorithms, ensuring that either all locks are acquired simultaneously or it safely blocks, fundamentally eliminating hidden deadlock risks.
+
+### 5. Practical Pitfall: Why Did `scoped_lock` Freeze the Program?
+In practice, beginners sometimes find that after adding `std::scoped_lock lock(mutex_a, mutex_b);`, their program suddenly freezes. However, when switching to the C++11/14 compatible version (using `std::lock` + `std::adopt_lock`), it works perfectly. Why does this happen?
+
+**The answer is usually: While adding `scoped_lock`, you forgot to remove the subsequent manual `.lock()` calls.**
+By default, `std::mutex` is a **Non-recursive Mutex**. If you successfully acquire the lock at the top of the function using `std::scoped_lock`, and then manually call `mutex_a.lock()` again inside the `if (reverse_order)` branch, the thread will **Deadlock on itself (Self-Deadlock)** and block permanently.
+
+On the other hand, the C++11/14 compatible version shown in your execution result:
+```cpp
+std::lock(mutex_a, mutex_b); // Blocks until both locks are acquired
+std::lock_guard<std::mutex> lock_a(mutex_a, std::adopt_lock);
+std::lock_guard<std::mutex> lock_b(mutex_b, std::adopt_lock);
+```
+This version performs correctly because it typically replaces the original manual `.lock()` logic entirely. Both approaches use the same underlying algorithm to prevent multi-lock deadlocks; `scoped_lock` in C++17 simply provides a more elegant syntactic sugar.

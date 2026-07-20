@@ -169,6 +169,48 @@ int main() {
 
     return 0;
 }
+```cpp
+// ... 之前的代码保持不变 ...
+```
+
+**实战运行结果：**
+```text
+=== Task 1: Thread Safe Account ===
+deposit +:100|balance:1100
+withdraw -50|balance:1050
+withdraw -50|balance:1000
+deposit +:100|balance:1100
+deposit +:100|balance:1200
+withdraw -50|balance:1150
+deposit +:100|balance:1250
+withdraw -50|balance:1200
+deposit +:100|balance:1300
+withdraw -50|balance:1250
+final balance:1250
+
+=== Task 2: Producer-Consumer Model ===
+consumed:0
+consumed:1
+consumed:2
+consumed:3
+consumed:4
+consumed:5
+consumed:6
+consumed:7
+consumed:8
+consumed:9
+Consumer exiting
+
+=== Task 3: Deadlock Demo ===
+=== 开始演示死锁与修复 ===
+--- 执行修复后的安全逻辑 (C++11/14 兼容版) ---
+[Safe Task 2] Processing... Iteration 0
+[Safe Task 2] Processing... Iteration 1
+[Safe Task 2] Processing... Iteration 2
+[Safe Task 1] Processing... Iteration 0
+[Safe Task 1] Processing... Iteration 1
+[Safe Task 1] Processing... Iteration 2
+=== 演示结束，无死锁发生 ===
 ```
 
 ---
@@ -199,4 +241,18 @@ int main() {
 ### 4. 锁的进阶：从 RAII 到死锁防范
 - **`std::lock_guard`**：最轻量的 RAII 包装器，作用域开始时加锁，离开时解锁。不支持手动控制，无法配合 `wait`。
 - **`std::unique_lock`**：提供 `unlock()` 等灵活机制，这是因为条件变量的 `wait` 在休眠时需要调用底层的 `unlock` 方法暂时交出锁的所有权。
-- **`std::scoped_lock` (C++17)**：多锁防死锁神器。在 Task 3 中，如果两个线程以相反的顺序分别试图锁住 A 和 B，极易死锁。`scoped_lock` 内部采用复杂的死锁避免算法（如加锁失败重试并回退机制），确保要么同时拿到所有锁，要么安全阻塞，从根本上排除了死锁隐患。
+- **`std::scoped_lock` (C++17)**：多锁防死锁神器。内部采用复杂的死锁避免算法，确保要么同时拿到所有锁，要么安全阻塞，从根本上排除了死锁隐患。
+
+### 5. 实战避坑：为什么添加了 `scoped_lock` 程序反而卡死？
+在部分初学者的实战中，有时会发现加入 `std::scoped_lock lock(mutex_a, mutex_b);` 后程序反而直接卡死了。而换成 C++11/14 兼容版（使用 `std::lock` + `std::adopt_lock`）就恢复正常。这是为什么？
+
+**答案通常是：在加入 `scoped_lock` 的同时，忘记删除下方的 `.lock()` 手动加锁代码。**
+`std::mutex` 默认是**非递归锁（Non-recursive Mutex）**。如果你在函数的开头使用了 `std::scoped_lock` 成功获取了锁，然后又在下方的 `if (reverse_order)` 分支中再次手动调用 `mutex_a.lock()`，线程就会**在自己身上发生死锁（Self-Deadlock）**，永久阻塞。
+
+而演示结果中 C++11/14 的兼容版：
+```cpp
+std::lock(mutex_a, mutex_b); // 阻塞直到同时获取两把锁
+std::lock_guard<std::mutex> lock_a(mutex_a, std::adopt_lock);
+std::lock_guard<std::mutex> lock_b(mutex_b, std::adopt_lock);
+```
+之所以表现正常，是因为这套代码通常会完整替换掉原有的手动 `.lock()` 逻辑。两者在底层防止多锁互相等待的算法是一致的，只不过 C++17 的 `scoped_lock` 提供了更优雅的语法糖。
