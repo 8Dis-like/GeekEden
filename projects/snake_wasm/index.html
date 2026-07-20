@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Snake - C++ WebAssembly</title>
+    <style>
+        body {
+            background-color: #1e1e1e;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 50px;
+        }
+        canvas {
+            background-color: #2d2d2d;
+            border: 2px solid #555;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            image-rendering: pixelated;
+        }
+        #hud {
+            display: flex;
+            justify-content: space-between;
+            width: 400px;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 16px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 10px 2px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>C++ AI Snake (Wasm)</h1>
+    <div id="hud">
+        <span>Score: <span id="score">0</span></span>
+        <span id="status">Status: Loading...</span>
+    </div>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <button class="btn" onclick="restartGame()">Restart Game</button>
+
+    <!-- Load the compiled Wasm module -->
+    <script src="snake.js"></script>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        const GRID_WIDTH = 20;
+        const GRID_HEIGHT = 20;
+        const CELL_SIZE = canvas.width / GRID_WIDTH; // 20px per cell
+
+        let lastTime = 0;
+        const TICK_RATE_MS = 100; // Speed of the game (100ms per frame)
+        let animationId;
+
+        // Ensure WASM is loaded before starting
+        Module.onRuntimeInitialized = () => {
+            restartGame();
+            animationId = requestAnimationFrame(gameLoop);
+        };
+
+        function restartGame() {
+            // Call C++ init_game(20, 20)
+            Module._init_game(GRID_WIDTH, GRID_HEIGHT);
+            document.getElementById('status').innerText = "Status: Running";
+            document.getElementById('status').style.color = "#4CAF50";
+        }
+
+        function gameLoop(timestamp) {
+            if (timestamp - lastTime >= TICK_RATE_MS) {
+                lastTime = timestamp;
+                
+                // Call C++ tick
+                Module._tick();
+                
+                // Fetch data
+                const score = Module._get_score();
+                const isGameOver = Module._is_game_over();
+                document.getElementById('score').innerText = score;
+
+                if (isGameOver) {
+                    document.getElementById('status').innerText = "Status: Game Over";
+                    document.getElementById('status').style.color = "#f44336";
+                } else {
+                    render();
+                }
+            }
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        function render() {
+            // Clear Canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Food
+            const fx = Module._get_food_x();
+            const fy = Module._get_food_y();
+            ctx.fillStyle = '#ff4757';
+            ctx.fillRect(fx * CELL_SIZE, fy * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+
+            // Fetch Snake Body from C++ memory
+            const snakeLength = Module._get_snake_length();
+            
+            // Allocate memory in WebAssembly to hold (x, y) for each snake segment
+            const bytesPerInt = 4;
+            const arrayPointer = Module._malloc(snakeLength * 2 * bytesPerInt);
+            
+            // Populate the array via C++
+            Module._get_snake_body(arrayPointer);
+            
+            // Read from WebAssembly memory
+            const snakeData = new Int32Array(Module.HEAP32.buffer, arrayPointer, snakeLength * 2);
+
+            // Draw Snake
+            for (let i = 0; i < snakeLength; i++) {
+                const x = snakeData[i * 2];
+                const y = snakeData[i * 2 + 1];
+                
+                if (i === 0) {
+                    ctx.fillStyle = '#2ed573'; // Head color
+                } else {
+                    ctx.fillStyle = '#1e90ff'; // Body color
+                }
+                
+                ctx.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE - 1, CELL_SIZE - 1);
+            }
+
+            // Free allocated memory
+            Module._free(arrayPointer);
+        }
+    </script>
+</body>
+</html>

@@ -9,6 +9,9 @@ After four days of intense deep dives into OOP vs. ECS architectures, smart poin
 
 Moreover, to align with our focus on **High-Performance Game Development and AI Systems**, we'll inject an **A* (A-Star) Pathfinding Algorithm** into the game. This transforms our snake into an "AI Snake" that autonomously calculates the shortest safe path to its food in a grid-based space.
 
+## 🎮 Live Demo
+👉 **[Click here to experience the WebAssembly C++ AI Snake live rendering animation](https://8Dis-like.github.io/GeekEden/demos/snake_wasm/index.html)**
+
 ## 1. Core Architecture Design & Data Structure Selection
 
 Before diving into code, we must carefully select the core data structures:
@@ -244,22 +247,3 @@ int main() {
     return 0;
 }
 ```
-
-## 3. Frontend Visualization Recommendations
-
-While the current code successfully prints an ASCII animation in the console, it lacks a modern touch when showcased in a portfolio or a technical blog. To present this perfectly, I highly recommend the following **three progressive frontend visualization solutions**:
-
-### 1. Ultimate Web Presentation: WebAssembly (Wasm) + HTML5 Canvas (Highly Recommended)
-Since GeekEden is deployed on GitHub (Wiki/Pages), allowing readers to **see the AI snake run directly in their browser** is incredibly impactful.
-- **Approach**: Compile this C++ code into a `.wasm` format using the **Emscripten** compiler. Replace the `cout` outputs in the `render()` function with calls to the HTML5 Canvas API (drawing rectangles).
-- **Advantage**: Readers don't need to download or setup environments. They just open the web page and experience a smooth 60 FPS AI snake animation, perfectly demonstrating your high-performance C++ core logic natively on the web.
-
-### 2. Modern 2D Game Engine: Raylib
-If you intend to package it as a native desktop application:
-- **Approach**: Introduce **Raylib**, an extremely lightweight graphics library written in pure C. Completely decouple the C++ core logic (`SnakeGame`) and have an external main loop call `BeginDrawing()` and `DrawRectangle()` to render the interface.
-- **Advantage**: Requires very minimal code changes but instantly transforms your command-line app into a modern executable (exe) with a window, color rendering, and frame rate controls.
-
-### 3. Decoupled Client-Server Architecture: WebSocket + React/Vue (For MMO Demo)
-If the overarching goal is to demonstrate an MMO's underlying architecture:
-- **Approach**: The C++ server maintains its tick rate (e.g., TickRate=20), running the `SnakeGame` logic in the background. Use a C++ library like `uWebSockets` to broadcast the snake's coordinates via JSON. The frontend, built with React + CSS Grid, simply receives this data and re-renders the grid.
-- **Advantage**: This perfectly simulates the classic communication model of large-scale MMO games: "The server handles AI calculations and validation, while the client is purely responsible for visual rendering."

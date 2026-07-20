@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Snake - A* Auto-Routing Live Demo</title>
+    <style>
+        body {
+            background-color: #1e1e1e;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 50px;
+        }
+        h1 { margin-bottom: 5px; }
+        p { color: #aaa; margin-bottom: 20px; text-align: center; max-width: 500px; }
+        canvas {
+            background-color: #2d2d2d;
+            border: 2px solid #555;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            image-rendering: pixelated;
+        }
+        #hud {
+            display: flex;
+            justify-content: space-between;
+            width: 400px;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 16px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 20px 2px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .btn:hover { background-color: #45a049; }
+    </style>
+</head>
+<body>
+    <h1>AI Snake (A* Pathfinding)</h1>
+    <p>This is a live web demonstration of the C++ A* Pathfinding logic documented in the GeekEden Tech Blog.</p>
+    <div id="hud">
+        <span>Score: <span id="score">0</span></span>
+        <span id="status">Status: Running</span>
+    </div>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <button class="btn" onclick="restartGame()">Restart Game</button>
+
+    <script>
+        // Note: This is a 1:1 JavaScript port of the C++ logic to serve as a 
+        // frictionless web demo hosted natively on GitHub Pages.
+        
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        const GRID_WIDTH = 20;
+        const GRID_HEIGHT = 20;
+        const CELL_SIZE = canvas.width / GRID_WIDTH; 
+
+        const Direction = { Up: 0, Down: 1, Left: 2, Right: 3 };
+
+        class Point {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+            }
+            equals(other) {
+                return this.x === other.x && this.y === other.y;
+            }
+            hash() {
+                return `${this.x},${this.y}`;
+            }
+        }
+
+        class SnakeGame {
+            constructor(w, h) {
+                this.width = w;
+                this.height = h;
+                this.dir = Direction.Right;
+                this.gameOver = false;
+                this.score = 0;
+                
+                this.snake = [
+                    new Point(Math.floor(w / 2), Math.floor(h / 2)),
+                    new Point(Math.floor(w / 2) - 1, Math.floor(h / 2))
+                ];
+                
+                this.spawnFood();
+            }
+
+            spawnFood() {
+                while (true) {
+                    let fx = Math.floor(Math.random() * this.width);
+                    let fy = Math.floor(Math.random() * this.height);
+                    this.food = new Point(fx, fy);
+                    
+                    let onSnake = false;
+                    for (let p of this.snake) {
+                        if (p.equals(this.food)) {
+                            onSnake = true;
+                            break;
+                        }
+                    }
+                    if (!onSnake) break;
+                }
+            }
+
+            setDirection(newDir) {
+                if (this.dir === Direction.Up && newDir === Direction.Down) return;
+                if (this.dir === Direction.Down && newDir === Direction.Up) return;
+                if (this.dir === Direction.Left && newDir === Direction.Right) return;
+                if (this.dir === Direction.Right && newDir === Direction.Left) return;
+                this.dir = newDir;
+            }
+
+            update() {
+                if (this.gameOver) return;
+
+                let head = this.snake[0];
+                let nextHead = new Point(head.x, head.y);
+
+                switch (this.dir) {
+                    case Direction.Up:    nextHead.y -= 1; break;
+                    case Direction.Down:  nextHead.y += 1; break;
+                    case Direction.Left:  nextHead.x -= 1; break;
+                    case Direction.Right: nextHead.x += 1; break;
+                }
+
+                if (nextHead.x < 0 || nextHead.x >= this.width || nextHead.y < 0 || nextHead.y >= this.height) {
+                    this.gameOver = true; return;
+                }
+
+                for (let i = 0; i < this.snake.length - 1; ++i) {
+                    if (nextHead.equals(this.snake[i])) { this.gameOver = true; return; }
+                }
+
+                this.snake.unshift(nextHead);
+
+                if (nextHead.equals(this.food)) {
+                    this.score += 10;
+                    this.spawnFood();
+                } else {
+                    this.snake.pop(); 
+                }
+            }
+
+            heuristic(a, b) {
+                return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+            }
+
+            aiFindPathToFood() {
+                // Min-heap implementation using simple array sort for demo purposes
+                let openSet = [];
+                let cameFrom = new Map();
+                let gScore = new Map();
+
+                let start = this.snake[0];
+                openSet.push({ pt: start, f: this.heuristic(start, this.food) });
+                gScore.set(start.hash(), 0);
+
+                let snakeBody = new Set();
+                for (let p of this.snake) snakeBody.add(p.hash());
+
+                let found = false;
+
+                while (openSet.length > 0) {
+                    openSet.sort((a, b) => a.f - b.f);
+                    let currentObj = openSet.shift();
+                    let curr = currentObj.pt;
+
+                    if (curr.equals(this.food)) { found = true; break; }
+
+                    let neighbors = [
+                        new Point(curr.x, curr.y - 1),
+                        new Point(curr.x, curr.y + 1),
+                        new Point(curr.x - 1, curr.y),
+                        new Point(curr.x + 1, curr.y)
+                    ];
+                    
+                    for (let next of neighbors) {
+                        if (next.x < 0 || next.x >= this.width || next.y < 0 || next.y >= this.height) continue;
+                        
+                        let isTail = next.equals(this.snake[this.snake.length - 1]);
+                        if (snakeBody.has(next.hash()) && !isTail) continue; 
+
+                        let tentativeG = gScore.get(curr.hash()) + 1;
+                        
+                        if (!gScore.has(next.hash()) || tentativeG < gScore.get(next.hash())) {
+                            cameFrom.set(next.hash(), curr);
+                            gScore.set(next.hash(), tentativeG);
+                            openSet.push({ pt: next, f: tentativeG + this.heuristic(next, this.food) });
+                        }
+                    }
+                }
+
+                if (found) {
+                    let currHash = this.food.hash();
+                    while (cameFrom.has(currHash)) {
+                        let prev = cameFrom.get(currHash);
+                        if (prev.equals(start)) {
+                            let currPt = new Point(parseInt(currHash.split(',')[0]), parseInt(currHash.split(',')[1]));
+                            if (currPt.x > start.x) this.setDirection(Direction.Right);
+                            else if (currPt.x < start.x) this.setDirection(Direction.Left);
+                            else if (currPt.y > start.y) this.setDirection(Direction.Down);
+                            else if (currPt.y < start.y) this.setDirection(Direction.Up);
+                            break;
+                        }
+                        currHash = prev.hash();
+                    }
+                }
+            }
+        }
+
+        let game = null;
+        let lastTime = 0;
+        const TICK_RATE_MS = 60; // 60ms for fast responsive AI showcase
+        let animationId;
+
+        function restartGame() {
+            game = new SnakeGame(GRID_WIDTH, GRID_HEIGHT);
+            document.getElementById('status').innerText = "Status: Running";
+            document.getElementById('status').style.color = "#4CAF50";
+            if (animationId) cancelAnimationFrame(animationId);
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        function gameLoop(timestamp) {
+            if (timestamp - lastTime >= TICK_RATE_MS) {
+                lastTime = timestamp;
+                
+                if (game && !game.gameOver) {
+                    game.aiFindPathToFood();
+                    game.update();
+                }
+                
+                document.getElementById('score').innerText = game.score;
+
+                if (game.gameOver) {
+                    document.getElementById('status').innerText = "Status: Game Over";
+                    document.getElementById('status').style.color = "#f44336";
+                } else {
+                    render();
+                }
+            }
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Food
+            ctx.fillStyle = '#ff4757';
+            ctx.fillRect(game.food.x * CELL_SIZE, game.food.y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+
+            // Draw Snake
+            for (let i = 0; i < game.snake.length; i++) {
+                let pt = game.snake[i];
+                if (i === 0) {
+                    ctx.fillStyle = '#2ed573'; // Head
+                } else {
+                    ctx.fillStyle = '#1e90ff'; // Body
+                }
+                ctx.fillRect(pt.x * CELL_SIZE, pt.y * CELL_SIZE, CELL_SIZE - 1, CELL_SIZE - 1);
+            }
+        }
+
+        // Start
+        restartGame();
+    </script>
+</body>
+</html>
